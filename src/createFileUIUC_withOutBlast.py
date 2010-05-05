@@ -3,6 +3,7 @@ import sys
 from xlrd import open_workbook,XL_CELL_TEXT
 
 header = ['MetaColumn', 'MetaRow', 'Column', 'Row', 'Reporter Identifier', 'Reporter Name', 'Reporter BioSequence Database Entry [beebase]', 'Reporter BioSequence Database Entry [entrez]', 'Reporter BioSequence Type', 'Reporter BioSequence PolymerType', 'Reporter BioSequence [Actual Sequence]', 'Reporter Comment', 'Reporter Group [Role]', 'Reporter Control Type']
+sequenceAM = [] #Store the sequence of AM values inserted from CSV file.
 
 def show_row(sh,rx):
     result = []
@@ -49,28 +50,77 @@ def createTXTFile(dicValues, pathtxtfileName):
     h = ""
     for c in header:
         h1 = "%s" %str(c)
-        h = str(h) + str(h1) + " "
+        h = str(h) + str(h1) + "\t"
     h = str(h) + "\n"
     file_txt.write(h)
     #Create lines
-    for k, values in dicValues.iteritems():
+    for key in sequenceAM:
         line = ""
+        # Dictionaries change the order of object. So, the AM values inserted ordered must
+        # be inserted in same order. 
+        values = dicValues[key]
+        i = 0
+        lenValues = values.__len__() 
         for v in values:
             v1 = "%s" %str(v)
-            line = str(line) + str(v1) + " "
-        line = str(line) + "\n"
+            line = str(line) + str(v1)
+            if i < lenValues-1:
+                line = str(line) + "\t"
+            i = i + 1
+        line = str(line)
         file_txt.write(line)
     file_txt.close()
+
+   
+
+def obtainGB(value):
+    retValue = ""
+    if (str(value).startswith("GB") ):
+        retValue = str(value).split()[0]
+    elif str(value).startswith("DB"):
+        retValue = str(value).split()[0]
+    elif str(value).startswith("BB"):
+       retValue = str(value).split()[0]
+    elif str(value).startswith("[Antisense]"):
+        retValue = str(value).split()[1]
+    else:
+        retValue = value
+    return str(retValue) 
+        
+    
+def readFileCSV(path, filename):
+    pathcsvfileName = os.path.join(path, filename)
+    file_csv = open(pathcsvfileName, "r")
+    dicRet = {}
+    for line in file_csv:
+        valuesRes = []
+        values = str(line).split(";")
+        i = 0
+        for v in values:
+            if i == 4:
+                key = str(values[4]) #AM
+                valuesRes.append(key)
+                sequenceAM.append(key)
+            elif i == 5:
+                #Obtain GB without Blast information
+                GB = str(obtainGB(v))
+                valuesRes.append(GB)
+            else:
+                valuesRes.append(str(v))
+            i = i + 1
+        dicRet[key] = valuesRes
+    return dicRet
     
 def main():
     path = sys.argv[1] #Path for files
-    filename = sys.argv[2] #xls file name
+    filename = sys.argv[2] #CSV file name
     txtfileName = sys.argv[3] #txt file name
     
     #Read XLS file and build the dictionary and header for txt file
     header = [] 
     dicValues = {}
-    dicValues = readFileXLS(path, filename)
+    #dicValues = readFileXLS(path, filename)
+    dicValues = readFileCSV(path, filename)
     #Create txt file
     pathtxtfileName = os.path.join(path, txtfileName)
     createTXTFile(dicValues, pathtxtfileName) 
