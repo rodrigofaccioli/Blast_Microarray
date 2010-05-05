@@ -1,42 +1,80 @@
 import os
 import sys
+from xlrd import open_workbook,XL_CELL_TEXT
 
-def patternLine(line):
-    #This function removes some characters such as "
-    removeCharacters = ('"')
-    for c in removeCharacters:
-        line = str(line).replace(str(c), "") 
-    return line
-        
-def createFileUIUC_WithOut_Blast(path):
-   #This function creates the UIUC_Honey_bee_oligo__WithOut_Blast.txt file 
-   # that is based on UIUC_HoneyBeeOligo.txt. The last file is a XLS version 
-   # file from website.
-   # it's used when XLS file changed and need to build a new txt file (table) without Blast column 
-   filenameSource = "UIUC_HoneyBeeOligo.txt"  #Was generating manually
-   filenameDest = "UIUC_Honey_bee_oligo_WithOut_Blast.txt"
-   pathfilename =  os.path.join(path,filenameSource)
-   f = open(pathfilename)
-   save_file = open(os.path.join(path,filenameDest), "w")
-   dic = {}
-   for line in f:
-        s = line.split()
-        if str(s[0]).find("AM") >= 0:
-            dic[str(s[0])] =  patternLine(str(s[1]))
+header = ['MetaColumn', 'MetaRow', 'Column', 'Row', 'Reporter Identifier', 'Reporter Name', 'Reporter BioSequence Database Entry [beebase]', 'Reporter BioSequence Database Entry [entrez]', 'Reporter BioSequence Type', 'Reporter BioSequence PolymerType', 'Reporter BioSequence [Actual Sequence]', 'Reporter Comment', 'Reporter Group [Role]', 'Reporter Control Type']
+
+def show_row(sh,rx):
+    result = []
+    colrange = range(sh.ncols)    
+    ctys = sh.row_types(rx)
+    cvals = sh.row_values(rx)
+    for colx in colrange:
+        cty = ctys[colx]
+        cval = cvals[colx]
+        result.append((colx, cty, cval))
+    return result
+
    
-   sortDic = dic.keys()
-   sortDic.sort()
-   for key in sortDic:
-       value = dic[key]
-       l = "%s>%s \n" % (key,value)      
-       save_file.write(l) 
-   save_file.close()
-   f.close()
+def readFileXLS(path, filename):
+    pathfilename = os.path.join(path, filename)
+    book = open_workbook(pathfilename)
+    sh = book.sheet_by_index(0)
+    rowsrange = range(sh.nrows)
 
+    header = []
+    dicRet = {}
+    for rx in rowsrange:
+        Values = []
+        for colx, ty, val in show_row(sh, rx):
+            if rx == 0:
+                val = str(val)
+                header.append(val)
+            else:
+                if colx == 4:
+                    key = str(val)
+                if colx == 5:
+                    val = str(val).split()[0] #Only GB.
+                else:
+                    val = str(val)
+                Values.append(val)
+        if rx > 0:
+            dicRet[key] = Values
+    return dicRet
+                
 
+def createTXTFile(dicValues, pathtxtfileName):
+    file_txt = open(pathtxtfileName, "w")
+    #Create Header
+    h = ""
+    for c in header:
+        h1 = "%s" %str(c)
+        h = str(h) + str(h1) + " "
+    h = str(h) + "\n"
+    file_txt.write(h)
+    #Create lines
+    for k, values in dicValues.iteritems():
+        line = ""
+        for v in values:
+            v1 = "%s" %str(v)
+            line = str(line) + str(v1) + " "
+        line = str(line) + "\n"
+        file_txt.write(line)
+    file_txt.close()
+    
 def main():
     path = sys.argv[1] #Path for files
-    createFileUIUC_WithOut_Blast(path)
+    filename = sys.argv[2] #xls file name
+    txtfileName = sys.argv[3] #txt file name
+    
+    #Read XLS file and build the dictionary and header for txt file
+    header = [] 
+    dicValues = {}
+    dicValues = readFileXLS(path, filename)
+    #Create txt file
+    pathtxtfileName = os.path.join(path, txtfileName)
+    createTXTFile(dicValues, pathtxtfileName) 
+    
     
 main()   
     
