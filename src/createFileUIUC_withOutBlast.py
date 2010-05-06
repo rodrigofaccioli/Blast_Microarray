@@ -61,7 +61,7 @@ def createTXTFile(dicValues, pathtxtfileName):
         values = dicValues[key]
         i = 0
         lenValues = values.__len__() 
-        for v in values:
+        for v in values:            
             v1 = "%s" %str(v)
             line = str(line) + str(v1)
             if i < lenValues-1:
@@ -72,7 +72,6 @@ def createTXTFile(dicValues, pathtxtfileName):
     file_txt.close()
 
    
-
 def obtainGB(value):
     retValue = ""
     if (str(value).startswith("GB") ):
@@ -92,13 +91,17 @@ def readFileCSV(path, filename):
     pathcsvfileName = os.path.join(path, filename)
     file_csv = open(pathcsvfileName, "r")
     dicRet = {}
+    ki = -1
     for line in file_csv:
+        ki = ki + 1
         valuesRes = []
         values = str(line).split(";")
         i = 0
         for v in values:
             if i == 4:
-                key = str(values[4]) #AM
+                #AM values are repeated. Therefore, the key 
+                # must be AM + i
+                key = str(values[4]) + str(ki) 
                 valuesRes.append(key)
                 sequenceAM.append(key)
             elif i == 5:
@@ -116,7 +119,7 @@ def main():
     filename = sys.argv[2] #CSV file name
     txtfileName = sys.argv[3] #txt file name
     
-    #Read XLS file and build the dictionary and header for txt file
+    #Read CSV file and build the dictionary and header for txt file
     header = [] 
     dicValues = {}
     #dicValues = readFileXLS(path, filename)
