@@ -101,8 +101,8 @@ def readFileCSV(path, filename):
             if i == 4:
                 #AM values are repeated. Therefore, the key 
                 # must be AM + i
-                key = str(values[4]) + str(ki) 
-                valuesRes.append(key)
+                key = str(v) + str(ki) 
+                valuesRes.append(v)
                 sequenceAM.append(key)
             elif i == 5:
                 #Obtain GB without Blast information
