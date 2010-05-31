@@ -354,11 +354,13 @@ def doBlast():
    # The main function
    print "starting"
    path = getParameter("pathBlast")
+   pathBeeArrayFileName = os.path.join(os.path.join(path,"BeeArray"),"UIUC_Honey_bee_oligo_READ_TO_WORK.txt")
+   
    D1 = getAmountBlast(getParameter("fileTXT"), getParameter("columnAM"))
    i = 0
    initialize(path)
    while (i < len(D1)):
-         GB, report = seekInUIUC_Honey_bee_oligo_READ_TO_WORK("UIUC_Honey_bee_oligo_READ_TO_WORK.txt",D1[i])
+         GB, report = seekInUIUC_Honey_bee_oligo_READ_TO_WORK(pathBeeArrayFileName,D1[i])
          if GB == None:
              message = str(D1[i]) + " " + "GB is None"
              saveFileNoMatch(path+NO_MATH_FILE, message,"a")
