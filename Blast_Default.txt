@@ -1,4 +1,0 @@
-pos1;Apis mellifera similar to eIF3-S8 CG4954-PA (LOC551184)
-pos2;Apis mellifera actin, transcript variant 2 (LOC406122)
-pos3;Apis mellifera similar to ribosomal protein S5, transcript variant 1 (LOC409728)
-pos4;Apis mellifera translation elongation factor eEF-1 alpha chain (LOC408385)
